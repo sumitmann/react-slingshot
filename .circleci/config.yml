@@ -3,12 +3,15 @@ version: 2.1
 workflows:
   # Name the workflow "create ci pipeline"
   ci_pipeline:
-    # Run the build, test jobs
+    # Run the build, test and analyze jobs
     jobs:
       - build
       - test:
           requires:
             - build
+      - analyze:
+          requires:
+            - test
 jobs:
   build:
     docker:
@@ -31,3 +34,12 @@ jobs:
             - "npm-packages"
       - run: npm i
       - run: npm run test
+  analyze:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-packages"
+      - run: npm audit
