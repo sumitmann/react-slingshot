@@ -3,9 +3,12 @@ version: 2.1
 workflows:
   # Name the workflow "create ci pipeline"
   ci_pipeline:
-    # Run the build job
+    # Run the build, test jobs
     jobs:
       - build
+      - test:
+          requires:
+            - build
 jobs:
   build:
     docker:
@@ -14,7 +17,17 @@ jobs:
       - checkout
       - run: npm i
       - save_cache:
-          key: 'npm-packages'
+          key: "npm-packages"
           paths: 
             - /src/node_modules
       - run: npm run lint
+  test:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - "npm-packages"
+      - run: npm i
+      - run: npm run test
